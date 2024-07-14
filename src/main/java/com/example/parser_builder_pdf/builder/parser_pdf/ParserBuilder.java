@@ -2,13 +2,17 @@ package com.example.parser_builder_pdf.builder.parser_pdf;
 
 import com.example.parser_builder_pdf.builder.parser_pdf.model.Competencias;
 import com.example.parser_builder_pdf.builder.parser_pdf.model.Contato;
+import com.example.parser_builder_pdf.builder.parser_pdf.model.Language;
+import com.example.parser_builder_pdf.builder.parser_pdf.model.Resume;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class ParserBuilder {
 
@@ -17,6 +21,8 @@ public class ParserBuilder {
     PDFTextStripper pdfStripper = new PDFTextStripper();
     Competencias competencias = new Competencias();
     Contato contato = new Contato();
+    Language language = new Language();
+    Resume resume = new Resume();
 
     public ParserBuilder() throws IOException {
     }
@@ -26,26 +32,67 @@ public class ParserBuilder {
 
         parseContact(text);
         parseCompetence(text);
+        parseLanguage(text);
+        parseResume(text);
 
-        System.out.println(contato.getContato() + competencias.getCompetencia02());
+        System.out.println(contato.getContato() + "\n" + contato.getEmail() + "\n" + contato.getLinkLinkd() + "\n" +
+                competencias.getCompetence() + "\n" + resume.getResume());
 
     }
 
-    private void parseCompetence(String text) {
-        int startIndex = text.indexOf("Principais competências");
-        int stopIndex = text.indexOf("Languages");
-        String allCompetences = text.substring(startIndex, stopIndex).trim();
-        String[] textList = allCompetences.split("\\r?\\n");
-        List<String> compList = new ArrayList<>();
+    private void parseResume(String text) {
+        String textList = getText("Resumo", "Experiência", text);
 
-        for (String competence : textList) {
-            compList.add(competence);
+        if (textList == null) {
+            return;
         }
 
-        competencias.setCompetencia01(String.valueOf(compList.get(1)));
-        competencias.setCompetencia02(String.valueOf(compList.get(2)));
-        competencias.setCompetencia03(String.valueOf(compList.get(3)));
+        String[] textSplited = new String[10];
+        
+        if (textList.contains("Experiência")) {
+            textSplited = textList.split("Experiência");
+        } else if (textList.contains("Formação acadêmica")) {
+            textSplited = textList.split("Formação acadêmica");
+        } else {
+            textSplited[0] = textList;
+        }
 
+        resume.setResume(textSplited[0]);
+    }
+
+    private void parseLanguage(String text) {
+            String[] textList = getSplitItems("Language", "Certifications", text);
+
+            if (textList == null) {
+                return;
+            }
+
+            List<String> langList = new ArrayList<>(Arrays.asList(textList).subList(1, textList.length));
+            language.setLanguage(langList);
+    }
+
+    private void parseCompetence(String text) {
+        String[] textList = getSplitItems("Principais competências", "Languages", text);
+
+        if (textList == null) {
+            return;
+        }
+
+        List<String> compList = new ArrayList<>();
+
+        for (int i = 1; i < 5; i++) {
+            if (i == 4) {
+                break;
+            }
+            String comp = Objects.requireNonNull(textList)[i];
+            boolean validate = containsNameInEmail(comp, contato.getEmail());
+            if (validate) {
+                break;
+            }
+            compList.add(textList[i]);
+        }
+
+        competencias.setCompetence(compList);
     }
 
 
@@ -54,17 +101,67 @@ public class ParserBuilder {
         String allContacts = contatosList[0];
         String[] textList = allContacts.split("\\r?\\n");
 
+        if (contatosList == null) {
+            return;
+        }
+
         for (String contact : textList) {
             if (contact.contains("(Mobile)")) {
-                String fone = contact.toString();
-                contato.setContato(fone);
+                contato.setContato(contact);
             } else if (contact.contains("@")) {
-                String email = contact.toString();
-                contato.setEmail(email);
-            } else if (contact.contains("(LinkedIn)")) {
-                String link = contact.toString();
-                contato.setLinkLinkd(link);
+
+                if (!contact.contains(".com")) {
+                    String emailOfc = contact + ".com";
+                    contato.setEmail(emailOfc);
+                } else {
+                    contato.setEmail(contact);
+                }
+
+            } else if (contact.contains("www.")) {
+                contato.setLinkLinkd(contact);
             }
         }
+    }
+
+    private String[] getSplitItems(String startIndex, String stopIndex, String text) {
+        int start = text.indexOf(startIndex);
+        int stop = text.indexOf(stopIndex);
+
+        if (start == -1) {
+            return null;
+        }
+
+        if (stop == -1) {
+            String allText = text.substring(start).trim();
+            return allText.split("\\r?\\n");
+        }
+
+        String allText = text.substring(start, stop).trim();
+        return allText.split("\\r?\\n");
+    }
+
+    private String getText(String startIndex, String stopIndex, String text) {
+        int start = text.indexOf(startIndex);
+        int stop = text.indexOf(stopIndex);
+
+        if (stop == -1) {
+            String allText = text.substring(start).trim();
+            return allText;
+        }
+
+        String allText = text.substring(start, stop).trim();
+        return allText;
+
+    }
+
+    private static boolean containsNameInEmail(String name, String email) {
+        String[] nameParts = name.toLowerCase().split(" ");
+
+        for (String part : nameParts) {
+            if (email.contains(part)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
