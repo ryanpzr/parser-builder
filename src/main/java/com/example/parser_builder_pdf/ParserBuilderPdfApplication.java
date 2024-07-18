@@ -18,7 +18,7 @@ public class ParserBuilderPdfApplication implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		try {
 			ParserBuilder parserBuilder = new ParserBuilder();
-			parserBuilder.build();
+			parserBuilder.builder();
 
 		} catch (IOException e) {
 			e.printStackTrace();

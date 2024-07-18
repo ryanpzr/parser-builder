@@ -1,43 +1,122 @@
 package com.example.parser_builder_pdf.builder.parser_pdf;
 
-import com.example.parser_builder_pdf.builder.parser_pdf.model.Competencias;
-import com.example.parser_builder_pdf.builder.parser_pdf.model.Contato;
-import com.example.parser_builder_pdf.builder.parser_pdf.model.Language;
-import com.example.parser_builder_pdf.builder.parser_pdf.model.Resume;
+import com.example.parser_builder_pdf.builder.parser_pdf.model.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ParserBuilder {
 
-    File file =  new File("src/main/java/com/example/parser_builder_pdf/sample/filesPdf/Profile.pdf");
+    File file =  new File("src/main/java/com/example/parser_builder_pdf/sample/filesPdf/Maria.pdf");
     PDDocument document = PDDocument.load(file);
     PDFTextStripper pdfStripper = new PDFTextStripper();
     Competencias competencias = new Competencias();
     Contato contato = new Contato();
     Language language = new Language();
     Resume resume = new Resume();
+    List<Experience> experiences = new ArrayList<>();
+    List<Formation> academicList = new ArrayList<>();
 
     public ParserBuilder() throws IOException {
     }
 
-    public void build() throws IOException {
+    public void builder() throws IOException {
         String text = pdfStripper.getText(document);
 
         parseContact(text);
         parseCompetence(text);
         parseLanguage(text);
         parseResume(text);
+        parseExperience(text);
+        parseAcademicEducation(text);
+
+//        System.out.println(text);
 
         System.out.println(contato.getContato() + "\n" + contato.getEmail() + "\n" + contato.getLinkLinkd() + "\n" +
-                competencias.getCompetence() + "\n" + resume.getResume());
+                competencias.getCompetence() + "\n" + resume.getResume() + "\n");
 
+        for (Experience ex : experiences) {
+            System.out.println(ex);
+        }
+
+        for (Formation fo : academicList) {
+            System.out.println(fo);
+        }
+
+    }
+
+    private void parseAcademicEducation(String text) {
+        String[] textList = getSplitItems("Formação acadêmica", "%%", text);
+        List<String> textListAsList = new ArrayList<>(Arrays.asList(textList));
+
+        Iterator<String> iterator = textListAsList.iterator();
+        while (iterator.hasNext()) {
+            String data = iterator.next();
+            if (data.contains("Page")) {
+                iterator.remove();
+            }
+        }
+
+        for (int i = 1; i < textListAsList.size(); i += 2) {
+            boolean validate = validarNumeros(textList[i + 1]);
+
+            if (!validate) {
+                String cursoIncompleto = textListAsList.get(i + 1);
+                String secondPart;
+
+                try {
+                    secondPart = textListAsList.get(i + 2);
+                    String cursoCompletp = cursoIncompleto.concat(secondPart);
+                    Formation formation = new Formation(textListAsList.get(i), cursoCompletp);
+                    academicList.add(formation);
+                    i++;
+                    continue;
+
+                } catch (IndexOutOfBoundsException ex) {
+                    Formation formation = new Formation(textListAsList.get(i), textListAsList.get(i + 1));
+                    academicList.add(formation);
+                    continue;
+                }
+            }
+
+            Formation formation = new Formation(textListAsList.get(i), textListAsList.get(i + 1));
+            academicList.add(formation);
+        }
+    }
+
+    private void parseExperience(String text) {
+        String[] textList = getSplitItems("Experiência", "Formação acadêmica", text);
+
+        if (validateNUll(textList)) return;
+
+        List<String> textListAsList = new ArrayList<>(Arrays.asList(textList));
+
+        Iterator<String> iterator = textListAsList.iterator();
+        while (iterator.hasNext()) {
+            String data = iterator.next();
+            if (data.contains("Page")) {
+                iterator.remove();
+            }
+            if (data.contains("   ")) {
+                iterator.remove();
+            }
+        }
+
+        textList = textListAsList.toArray(new String[0]);
+
+        for (int i = 1; i < textList.length; i += 4) {
+            if (i + 3 < textList.length) {
+                Experience exp = new Experience(textList[i], textList[i + 1], textList[i + 2], textList[i + 3]);
+                experiences.add(exp);
+            } else {
+                System.err.println("Dados insuficientes para criar uma experiência completa.");
+            }
+        }
     }
 
     private void parseResume(String text) {
@@ -47,7 +126,7 @@ public class ParserBuilder {
             return;
         }
 
-        String[] textSplited = new String[10];
+        String[] textSplited = new String[1];
         
         if (textList.contains("Experiência")) {
             textSplited = textList.split("Experiência");
@@ -61,22 +140,31 @@ public class ParserBuilder {
     }
 
     private void parseLanguage(String text) {
-            String[] textList = getSplitItems("Language", "Certifications", text);
+        String[] textList = getSplitItems("Language", "Certifications", text);
 
-            if (textList == null) {
-                return;
+        if (validateNUll(textList)) return;
+
+        List<String> langList = new ArrayList<>();
+
+        for (int i = 1; i < textList.length; i++) {
+            if (i == 4) {
+                break;
             }
+            String comp = Objects.requireNonNull(textList)[i];
+            boolean validate = containsNameInEmail(comp, contato.getEmail());
+            if (validate) {
+                break;
+            }
+            langList.add(textList[i]);
+        }
 
-            List<String> langList = new ArrayList<>(Arrays.asList(textList).subList(1, textList.length));
-            language.setLanguage(langList);
+        language.setLanguage(langList);
     }
 
     private void parseCompetence(String text) {
         String[] textList = getSplitItems("Principais competências", "Languages", text);
 
-        if (textList == null) {
-            return;
-        }
+        if (validateNUll(textList)) return;
 
         List<String> compList = new ArrayList<>();
 
@@ -95,15 +183,12 @@ public class ParserBuilder {
         competencias.setCompetence(compList);
     }
 
-
     public void parseContact(String text) {
         String[] contatosList = text.split("Principais competências");
         String allContacts = contatosList[0];
         String[] textList = allContacts.split("\\r?\\n");
 
-        if (contatosList == null) {
-            return;
-        }
+        if (validateNUll(contatosList)) return;
 
         for (String contact : textList) {
             if (contact.contains("(Mobile)")) {
@@ -159,6 +244,28 @@ public class ParserBuilder {
 
         for (String part : nameParts) {
             if (email.contains(part)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean validateNUll(String[] textList) {
+        if (textList == null) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean validarNumeros(String texto) {
+        // Expressão regular para encontrar dígitos
+        Pattern pattern = Pattern.compile("\\d");
+        Matcher matcher = pattern.matcher(texto);
+
+        int contador = 0;
+        while (matcher.find()) {
+            contador++;
+            if (contador >= 8) {
                 return true;
             }
         }
