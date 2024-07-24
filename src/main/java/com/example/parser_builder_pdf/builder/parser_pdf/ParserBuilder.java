@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 public class ParserBuilder {
 
-    File file =  new File("src/main/java/com/example/parser_builder_pdf/sample/filesPdf/Maria.pdf");
+    File file =  new File("src/main/java/com/example/parser_builder_pdf/sample/filesPdf/Profile.pdf");
     PDDocument document = PDDocument.load(file);
     PDFTextStripper pdfStripper = new PDFTextStripper();
     Competencias competencias = new Competencias();
@@ -71,7 +71,7 @@ public class ParserBuilder {
 
                 try {
                     secondPart = textListAsList.get(i + 2);
-                    String cursoCompletp = cursoIncompleto.concat(secondPart);
+                    String cursoCompletp = cursoIncompleto.concat(" " + secondPart);
                     Formation formation = new Formation(textListAsList.get(i), cursoCompletp);
                     academicList.add(formation);
                     i++;
@@ -193,18 +193,40 @@ public class ParserBuilder {
         for (String contact : textList) {
             if (contact.contains("(Mobile)")) {
                 contato.setContato(contact);
-            } else if (contact.contains("@")) {
 
-                if (!contact.contains(".com")) {
-                    String emailOfc = contact + ".com";
-                    contato.setEmail(emailOfc);
-                } else {
-                    contato.setEmail(contact);
-                }
+            } else if (contact.contains("@")) {
+                isValidateEmail(contact);
 
             } else if (contact.contains("www.")) {
-                contato.setLinkLinkd(contact);
+                isValidateLink(contact, allContacts);
             }
+        }
+    }
+
+    private void isValidateLink(String contact, String allContacts) {
+        if (contact.contains("(LinkedIn)")) {
+            contato.setLinkLinkd(contact);
+        } else {
+            String[] secondPart = allContacts.split(contact);
+            String[] secondPartSplitted = secondPart[1].split("\\r?\\n");
+
+            if (secondPartSplitted[1].contains("(LinkedIn)")) {
+                contato.setLinkLinkd(contact.concat(secondPartSplitted[1]));
+
+            } else {
+                String linkComplete = secondPartSplitted[1] + " " + secondPartSplitted[2];
+
+                contato.setLinkLinkd(contact.concat(linkComplete));
+            }
+        }
+    }
+
+    private void isValidateEmail(String contact) {
+        if (!contact.contains(".com")) {
+            String emailOfc = contact + ".com";
+            contato.setEmail(emailOfc);
+        } else {
+            contato.setEmail(contact);
         }
     }
 
@@ -258,7 +280,6 @@ public class ParserBuilder {
     }
 
     public static boolean validarNumeros(String texto) {
-        // Expressão regular para encontrar dígitos
         Pattern pattern = Pattern.compile("\\d");
         Matcher matcher = pattern.matcher(texto);
 
