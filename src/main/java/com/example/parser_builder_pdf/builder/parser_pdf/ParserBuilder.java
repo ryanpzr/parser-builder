@@ -1,5 +1,6 @@
 package com.example.parser_builder_pdf.builder.parser_pdf;
 
+import com.example.parser_builder_pdf.builder.parser_pdf.factory.*;
 import com.example.parser_builder_pdf.builder.parser_pdf.model.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -15,6 +16,7 @@ public class ParserBuilder {
     File file =  new File("src/main/java/com/example/parser_builder_pdf/sample/filesPdf/Profile.pdf");
     PDDocument document = PDDocument.load(file);
     PDFTextStripper pdfStripper = new PDFTextStripper();
+
     Competencias competencias = new Competencias();
     Contato contato = new Contato();
     Language language = new Language();
@@ -22,31 +24,56 @@ public class ParserBuilder {
     List<Experience> experiences = new ArrayList<>();
     List<Formation> academicList = new ArrayList<>();
 
+    DataFactory dataFactory = new DataFactory();
+
     public ParserBuilder() throws IOException {
     }
 
     public void builder() throws IOException {
         String text = pdfStripper.getText(document);
+        dataFactory.createData(text);
 
-        parseContact(text);
-        parseCompetence(text);
-        parseLanguage(text);
-        parseResume(text);
-        parseExperience(text);
-        parseAcademicEducation(text);
+        contato = dataFactory.getContato();
+        language = dataFactory.getLanguage();
+        competencias = dataFactory.getCompetence();
+        resume = dataFactory.getResume();
 
-//        System.out.println(text);
+//        parseExperience(text);
+//        parseAcademicEducation(text);
 
-        System.out.println(contato.getContato() + "\n" + contato.getEmail() + "\n" + contato.getLinkLinkd() + "\n" +
-                competencias.getCompetence() + "\n" + resume.getResume() + "\n");
+    }
 
-        for (Experience ex : experiences) {
-            System.out.println(ex);
+
+    public void build() throws IOException {
+        builder();
+
+        if (contato != null) {
+            System.out.println(contato.getContato());
+            System.out.println(contato.getEmail());
+            System.out.println(contato.getLinkLinkd());
+        } else {
+            System.out.println("Contato não foi preenchido");
         }
 
-        for (Formation fo : academicList) {
-            System.out.println(fo);
+        if (competencias != null) {
+            System.out.println(competencias.getCompetence());
+        } else {
+            System.out.println("Competencias não foram preenchidas");
         }
+
+        if (resume != null) {
+            System.out.println(resume.getResume());
+        } else {
+            System.out.println("Resume não foi preenchido");
+        }
+
+//      for (Experience ex : experiences) {
+//          System.out.println(ex);
+//      }
+//
+//      for (Formation fo : academicList) {
+//          System.out.println(fo);
+//      }
 
     }
 
@@ -119,117 +146,6 @@ public class ParserBuilder {
         }
     }
 
-    private void parseResume(String text) {
-        String textList = getText("Resumo", "Experiência", text);
-
-        if (textList == null) {
-            return;
-        }
-
-        String[] textSplited = new String[1];
-        
-        if (textList.contains("Experiência")) {
-            textSplited = textList.split("Experiência");
-        } else if (textList.contains("Formação acadêmica")) {
-            textSplited = textList.split("Formação acadêmica");
-        } else {
-            textSplited[0] = textList;
-        }
-
-        resume.setResume(textSplited[0]);
-    }
-
-    private void parseLanguage(String text) {
-        String[] textList = getSplitItems("Language", "Certifications", text);
-
-        if (validateNUll(textList)) return;
-
-        List<String> langList = new ArrayList<>();
-
-        for (int i = 1; i < textList.length; i++) {
-            if (i == 4) {
-                break;
-            }
-            String comp = Objects.requireNonNull(textList)[i];
-            boolean validate = containsNameInEmail(comp, contato.getEmail());
-            if (validate) {
-                break;
-            }
-            langList.add(textList[i]);
-        }
-
-        language.setLanguage(langList);
-    }
-
-    private void parseCompetence(String text) {
-        String[] textList = getSplitItems("Principais competências", "Languages", text);
-
-        if (validateNUll(textList)) return;
-
-        List<String> compList = new ArrayList<>();
-
-        for (int i = 1; i < 5; i++) {
-            if (i == 4) {
-                break;
-            }
-            String comp = Objects.requireNonNull(textList)[i];
-            boolean validate = containsNameInEmail(comp, contato.getEmail());
-            if (validate) {
-                break;
-            }
-            compList.add(textList[i]);
-        }
-
-        competencias.setCompetence(compList);
-    }
-
-    public void parseContact(String text) {
-        String[] contatosList = text.split("Principais competências");
-        String allContacts = contatosList[0];
-        String[] textList = allContacts.split("\\r?\\n");
-
-        if (validateNUll(contatosList)) return;
-
-        for (String contact : textList) {
-            if (contact.contains("(Mobile)")) {
-                contato.setContato(contact);
-
-            } else if (contact.contains("@")) {
-                isValidateEmail(contact);
-
-            } else if (contact.contains("www.")) {
-                isValidateLink(contact, allContacts);
-            }
-        }
-    }
-
-    private void isValidateLink(String contact, String allContacts) {
-        if (contact.contains("(LinkedIn)")) {
-            contato.setLinkLinkd(contact);
-        } else {
-            String[] secondPart = allContacts.split(contact);
-            String[] secondPartSplitted = secondPart[1].split("\\r?\\n");
-
-            if (secondPartSplitted[1].contains("(LinkedIn)")) {
-                contato.setLinkLinkd(contact.concat(secondPartSplitted[1]));
-
-            } else {
-                String linkComplete = secondPartSplitted[1] + " " + secondPartSplitted[2];
-
-                contato.setLinkLinkd(contact.concat(linkComplete));
-            }
-        }
-    }
-
-    private void isValidateEmail(String contact) {
-        if (!contact.contains(".com")) {
-            String emailOfc = contact + ".com";
-            contato.setEmail(emailOfc);
-        } else {
-            contato.setEmail(contact);
-        }
-    }
-
     private String[] getSplitItems(String startIndex, String stopIndex, String text) {
         int start = text.indexOf(startIndex);
         int stop = text.indexOf(stopIndex);
@@ -240,39 +156,14 @@ public class ParserBuilder {
 
         if (stop == -1) {
             String allText = text.substring(start).trim();
-            return allText.split("\\r?\\n");
+            allText.split("\\r?\\n");
         }
 
         String allText = text.substring(start, stop).trim();
         return allText.split("\\r?\\n");
     }
 
-    private String getText(String startIndex, String stopIndex, String text) {
-        int start = text.indexOf(startIndex);
-        int stop = text.indexOf(stopIndex);
-
-        if (stop == -1) {
-            String allText = text.substring(start).trim();
-            return allText;
-        }
-
-        String allText = text.substring(start, stop).trim();
-        return allText;
-
-    }
-
-    private static boolean containsNameInEmail(String name, String email) {
-        String[] nameParts = name.toLowerCase().split(" ");
-
-        for (String part : nameParts) {
-            if (email.contains(part)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean validateNUll(String[] textList) {
+    public static boolean validateNUll(String[] textList) {
         if (textList == null) {
             return true;
         }

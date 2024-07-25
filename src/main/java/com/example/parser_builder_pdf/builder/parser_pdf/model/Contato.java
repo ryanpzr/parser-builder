@@ -11,7 +11,7 @@ public class Contato {
     public Contato() {
     }
 
-    public Contato(String contato, String email, String linkLinkd, List<Competencias> competencias, String language) {
+    public Contato(String contato, String email, String linkLinkd) {
         this.contato = contato;
         this.email = email;
         this.linkLinkd = linkLinkd;
