@@ -1,8 +1,7 @@
 package com.example.parser_builder_pdf.builder.parser_pdf.factory;
 
+import com.example.parser_builder_pdf.builder.parser_pdf.Util.Utils;
 import com.example.parser_builder_pdf.builder.parser_pdf.model.Competencias;
-import com.example.parser_builder_pdf.builder.parser_pdf.model.Resume;
-
 import java.util.*;
 
 import static com.example.parser_builder_pdf.builder.parser_pdf.ParserBuilder.validateNUll;
@@ -10,14 +9,13 @@ import static com.example.parser_builder_pdf.builder.parser_pdf.ParserBuilder.va
 public class CompetenceFactory {
     Competencias competencias = new Competencias();
     Set<String> topics = new LinkedHashSet<>();
+    Utils utils = new Utils();
 
     public void parseCompetence(String text) {
         Collections.addAll(topics, "Languages", "Certificações", "Certifications", "Resumo", "Summary");
-        String[] textList = getSplitItems("Principais competências", "Linguas", text);
+        String[] textList = utils.getSplitItem("Principais competências", "Linguas", text, "Top Skills", topics);
 
-        if (textList == null) {
-            return;
-        }
+        if (validateNUll(textList)) return;
 
         List<String> compList = new ArrayList<>();
 
@@ -34,39 +32,5 @@ public class CompetenceFactory {
 
     public Competencias getCompetence() {
         return competencias;
-    }
-
-    private String[] getSplitItems(String startIndexPtbr, String stopIndexPtbr, String text) {
-        int start = text.indexOf(startIndexPtbr);
-        int stop = text.indexOf(stopIndexPtbr);
-
-        if (start == -1) {
-            start = text.indexOf("Top Skills");
-
-            if (start == -1) {
-                return null;
-            }
-        }
-
-        if (stop == -1) {
-            for (String data : topics) {
-                stop = text.indexOf(data);
-
-                if (stop == -1) {
-                    continue;
-
-                } else {
-                    String allText = text.substring(start, stop).trim();
-                    return allText.split("\\r?\\n");
-
-                }
-            }
-
-            String allText = text.substring(start).trim();
-            return allText.split("\\r?\\n");
-        }
-
-        String allText = text.substring(start, stop).trim();
-        return allText.split("\\r?\\n");
     }
 }

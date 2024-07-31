@@ -1,17 +1,32 @@
 package com.example.parser_builder_pdf.builder.parser_pdf.model;
 
+import java.util.List;
+
 public class Experience {
 
     private String empresa;
     private String cargo;
     private String data;
     private String localizacao;
+    private List<String> competencias;
 
-    public Experience(String empresa, String cargo, String data, String localizacao) {
+    public Experience(String empresa, String cargo, String data, String localizacao, List<String> competencias) {
         this.empresa = empresa;
         this.cargo = cargo;
         this.data = data;
         this.localizacao = localizacao;
+        this.competencias = competencias;
+    }
+
+    public Experience() {
+    }
+
+    public List<String> getCompetencias() {
+        return competencias;
+    }
+
+    public void setCompetencias(List<String> competencias) {
+        this.competencias = competencias;
     }
 
     public String getEmpresa() {

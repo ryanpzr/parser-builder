@@ -1,5 +1,6 @@
 package com.example.parser_builder_pdf.builder.parser_pdf.factory;
 
+import com.example.parser_builder_pdf.builder.parser_pdf.Util.Utils;
 import com.example.parser_builder_pdf.builder.parser_pdf.model.Resume;
 
 import java.util.Collections;
@@ -8,11 +9,12 @@ import java.util.Set;
 
 public class ResumeFactory {
     Resume resume = new Resume();
+    Utils utils = new Utils();
     Set<String> topics = new LinkedHashSet<>();
 
     public void parseResume(String text) {
         Collections.addAll(topics, "Experience", "Formação acadêmica", "Education");
-        String textList = getSplitItems("Resumo", "Experiência", text);
+        String textList = utils.getItem("Resumo", "Experiência", text, "Summary", topics);
 
         if (textList == null) {
             return;
@@ -27,38 +29,5 @@ public class ResumeFactory {
 
     public Resume getResume() {
         return resume;
-    }
-
-    private String getSplitItems(String startIndexPtbr, String stopIndexPtbr, String text) {
-        int start = text.indexOf(startIndexPtbr);
-        int stop = text.indexOf(stopIndexPtbr);
-
-        if (start == -1) {
-            start = text.indexOf("Summary");
-
-            if (start == -1) {
-                return null;
-            }
-        }
-
-        if (stop == -1) {
-            for (String data : topics) {
-                stop = text.indexOf(data);
-
-                if (stop == -1) {
-                    continue;
-
-                } else {
-                    String allText = text.substring(start, stop).trim();
-                    return allText;
-                }
-            }
-
-            String allText = text.substring(start).trim();
-            return allText;
-        }
-
-        String allText = text.substring(start, stop).trim();
-        return allText;
     }
 }

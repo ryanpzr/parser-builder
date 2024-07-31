@@ -21,8 +21,8 @@ public class ParserBuilder {
     Contato contato = new Contato();
     Language language = new Language();
     Resume resume = new Resume();
-    List<Experience> experiences = new ArrayList<>();
-    List<Formation> academicList = new ArrayList<>();
+    List<Experience> experience = new ArrayList<>();
+    List<Formation> formation = new ArrayList<>();
 
     DataFactory dataFactory = new DataFactory();
 
@@ -31,18 +31,22 @@ public class ParserBuilder {
 
     public void builder() throws IOException {
         String text = pdfStripper.getText(document);
-        dataFactory.createData(text);
+//        System.out.println(text);
+
+        try {
+            dataFactory.createData(text);
+
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
 
         contato = dataFactory.getContato();
         language = dataFactory.getLanguage();
         competencias = dataFactory.getCompetence();
         resume = dataFactory.getResume();
-
-//        parseExperience(text);
-//        parseAcademicEducation(text);
-
+        experience = dataFactory.getExperience();
+        formation = dataFactory.getAcademicFactory();
     }
-
 
     public void build() throws IOException {
         builder();
@@ -67,119 +71,19 @@ public class ParserBuilder {
             System.out.println("Resume não foi preenchido");
         }
 
-//      for (Experience ex : experiences) {
-//          System.out.println(ex);
-//      }
-//
-//      for (Formation fo : academicList) {
-//          System.out.println(fo);
-//      }
-
-    }
-
-    private void parseAcademicEducation(String text) {
-        String[] textList = getSplitItems("Formação acadêmica", "%%", text);
-        List<String> textListAsList = new ArrayList<>(Arrays.asList(textList));
-
-        Iterator<String> iterator = textListAsList.iterator();
-        while (iterator.hasNext()) {
-            String data = iterator.next();
-            if (data.contains("Page")) {
-                iterator.remove();
-            }
+        for (Experience ex : experience) {
+            System.out.println(ex);
         }
 
-        for (int i = 1; i < textListAsList.size(); i += 2) {
-            boolean validate = validarNumeros(textList[i + 1]);
-
-            if (!validate) {
-                String cursoIncompleto = textListAsList.get(i + 1);
-                String secondPart;
-
-                try {
-                    secondPart = textListAsList.get(i + 2);
-                    String cursoCompletp = cursoIncompleto.concat(" " + secondPart);
-                    Formation formation = new Formation(textListAsList.get(i), cursoCompletp);
-                    academicList.add(formation);
-                    i++;
-                    continue;
-
-                } catch (IndexOutOfBoundsException ex) {
-                    Formation formation = new Formation(textListAsList.get(i), textListAsList.get(i + 1));
-                    academicList.add(formation);
-                    continue;
-                }
-            }
-
-            Formation formation = new Formation(textListAsList.get(i), textListAsList.get(i + 1));
-            academicList.add(formation);
-        }
-    }
-
-    private void parseExperience(String text) {
-        String[] textList = getSplitItems("Experiência", "Formação acadêmica", text);
-
-        if (validateNUll(textList)) return;
-
-        List<String> textListAsList = new ArrayList<>(Arrays.asList(textList));
-
-        Iterator<String> iterator = textListAsList.iterator();
-        while (iterator.hasNext()) {
-            String data = iterator.next();
-            if (data.contains("Page")) {
-                iterator.remove();
-            }
-            if (data.contains("   ")) {
-                iterator.remove();
-            }
+        for (Formation fo : formation) {
+            System.out.println(fo);
         }
 
-        textList = textListAsList.toArray(new String[0]);
-
-        for (int i = 1; i < textList.length; i += 4) {
-            if (i + 3 < textList.length) {
-                Experience exp = new Experience(textList[i], textList[i + 1], textList[i + 2], textList[i + 3]);
-                experiences.add(exp);
-            } else {
-                System.err.println("Dados insuficientes para criar uma experiência completa.");
-            }
-        }
-    }
-
-    private String[] getSplitItems(String startIndex, String stopIndex, String text) {
-        int start = text.indexOf(startIndex);
-        int stop = text.indexOf(stopIndex);
-
-        if (start == -1) {
-            return null;
-        }
-
-        if (stop == -1) {
-            String allText = text.substring(start).trim();
-            allText.split("\\r?\\n");
-        }
-
-        String allText = text.substring(start, stop).trim();
-        return allText.split("\\r?\\n");
     }
 
     public static boolean validateNUll(String[] textList) {
         if (textList == null) {
             return true;
-        }
-        return false;
-    }
-
-    public static boolean validarNumeros(String texto) {
-        Pattern pattern = Pattern.compile("\\d");
-        Matcher matcher = pattern.matcher(texto);
-
-        int contador = 0;
-        while (matcher.find()) {
-            contador++;
-            if (contador >= 8) {
-                return true;
-            }
         }
         return false;
     }
