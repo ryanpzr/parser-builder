@@ -7,6 +7,7 @@ import com.example.parser_builder_pdf.builder.parser_pdf.model.Formation;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import static com.example.parser_builder_pdf.builder.parser_pdf.ParserBuilder.validateNUll;
 
@@ -24,10 +25,8 @@ public class AcademicFactory {
 
         String page = getLastIndexOfPage(text);
 
-        String[] textList = utils.getSplitItem("Formação acadêmica", page, text, "Education", topics);
-        List<String> textListAsList = new ArrayList<>(Arrays.asList(textList));
-
-        if (validateNUll(textList)) return;
+        String[] textList = Utils.getSplitItem(text, "--------------education", page, topics);
+        List<String> textListAsList = new ArrayList<>(Arrays.asList(Objects.requireNonNull(textList)));
 
         Iterator<String> iterator = textListAsList.iterator();
         while (iterator.hasNext()) {
@@ -47,31 +46,36 @@ public class AcademicFactory {
             }
         }
 
-        for (int i = 0; i < textListAsList.size(); i += 2) {
+        try {
+            for (int i = 1; i < textListAsList.size(); i += 2) {
 
-            boolean validate = validarNumeros(textListAsList.get(i + 1));
+                boolean validate = validarNumeros(textListAsList.get(i + 1));
 
-            if (!validate) {
-                String cursoIncompleto = textListAsList.get(i + 1);
-                String secondPart;
+                if (!validate) {
+                    String cursoIncompleto = textListAsList.get(i + 1);
+                    String secondPart;
 
-                try {
-                    secondPart = textListAsList.get(i + 2);
-                    String cursoCompletp = cursoIncompleto.concat(" " + secondPart);
-                    Formation formation = new Formation(textListAsList.get(i), cursoCompletp);
-                    formationList.add(formation);
-                    i++;
-                    continue;
+                    try {
+                        secondPart = textListAsList.get(i + 2);
+                        String cursoCompletp = cursoIncompleto.concat(" " + secondPart);
+                        Formation formation = new Formation(textListAsList.get(i), cursoCompletp);
+                        formationList.add(formation);
+                        i++;
+                        continue;
 
-                } catch (IndexOutOfBoundsException ex) {
-                    Formation formation = new Formation(textListAsList.get(i), textListAsList.get(i + 1));
-                    formationList.add(formation);
-                    continue;
+                    } catch (IndexOutOfBoundsException ex) {
+                        Formation formation = new Formation(textListAsList.get(i), textListAsList.get(i + 1));
+                        formationList.add(formation);
+                        continue;
+                    }
                 }
+
+                Formation formation = new Formation(textListAsList.get(i), textListAsList.get(i + 1));
+                formationList.add(formation);
             }
 
-            Formation formation = new Formation(textListAsList.get(i), textListAsList.get(i + 1));
-            formationList.add(formation);
+        } catch (Exception ex) {
+            System.err.println("Não foi possivel fazer o parser da Formação Academica. " + ex);
         }
     }
 
@@ -90,16 +94,24 @@ public class AcademicFactory {
     }
 
     public static boolean validarNumeros(String texto) {
-        Pattern pattern = Pattern.compile("\\d");
-        Matcher matcher = pattern.matcher(texto);
+        try {
+            Pattern pattern = Pattern.compile("\\d");
+            Matcher matcher = pattern.matcher(texto);
 
-        int contador = 0;
-        while (matcher.find()) {
-            contador++;
-            if (contador >= 8) {
+            if (!matcher.find()) {
                 return true;
             }
+
+            int contador = 0;
+            do {
+                contador++;
+            } while (matcher.find());
+
+            return contador >= 8;
+
+        } catch (PatternSyntaxException e) {
+            System.out.println("Erro de sintaxe de regex: " + e.getMessage());
+            return true;
         }
-        return false;
     }
 }

@@ -1,43 +1,44 @@
 package com.example.parser_builder_pdf.builder.parser_pdf.factory;
 
 import com.example.parser_builder_pdf.builder.parser_pdf.Util.Utils;
-import com.example.parser_builder_pdf.builder.parser_pdf.model.Competencias;
+import com.example.parser_builder_pdf.builder.parser_pdf.model.Certification;
 import com.example.parser_builder_pdf.builder.parser_pdf.model.Contato;
+import com.example.parser_builder_pdf.builder.parser_pdf.model.Language;
 
 import java.util.*;
 
 import static com.example.parser_builder_pdf.builder.parser_pdf.ParserBuilder.validateNUll;
 
-public class CompetenceFactory {
-    private final Set<String> topics = new LinkedHashSet<>();
-    private final List<Competencias> compList = new ArrayList<>();
+public class CertificationFactory {
+    Set<String> topics = new LinkedHashSet<>();
+    List<Certification> certificationList = new ArrayList<>();
     private final DataFactory dataFactory;
 
-    public CompetenceFactory(DataFactory dataFactory) {
+    public CertificationFactory(DataFactory dataFactory) {
         this.dataFactory = dataFactory;
     }
 
-    public void parseCompetence(String text) {
+    public void parseCertification(String text) {
         try {
-            Collections.addAll(topics, "--------------certifications", "--------------resumo", "--------------experiencia", "--------------education");
-            List<String> textList = List.of(Objects.requireNonNull(Utils.getSplitItem(text, "--------------competence", "--------------languages", topics)));
+            Collections.addAll(topics, "--------------experiencia", "--------------education");
+            List<String> textList = List.of(Objects.requireNonNull(Utils.getSplitItem( text,"--------------certifications", "--------------resumo", topics)));
 
             for (int i = 2; i < textList.size(); i++) {
-                if (textList.size() > 4) {
-                    String comp = Objects.requireNonNull(textList).get(i);
-                    boolean validate = containsNameInEmail(comp);
-                    if (validate) {
-                        break;
-                    }
+
+                String comp = Objects.requireNonNull(textList).get(i);
+                boolean validate = containsNameInEmail(comp);
+                if (validate) {
+                    break;
                 }
 
-                Competencias competence = new Competencias(textList.get(i));
-                compList.add(competence);
+                Certification certification = new Certification(textList.get(i));
+                certificationList.add(certification);
             }
 
         } catch (Exception ex) {
             System.err.println("Não foi possivel fazer o parser das Certificações. " + ex);
         }
+
     }
 
     public boolean containsNameInEmail(String item) {
@@ -57,7 +58,7 @@ public class CompetenceFactory {
         return false;
     }
 
-    public List<Competencias> getCompetence() {
-        return compList;
+    public List<Certification> getCertification() {
+        return certificationList;
     }
 }

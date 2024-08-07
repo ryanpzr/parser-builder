@@ -4,16 +4,27 @@ import java.util.List;
 
 public class Competencias {
 
-    private List<String> competence;
+    private String competence;
 
     public Competencias() {
     }
 
-    public List<String> getCompetence() {
+    public Competencias(String competence) {
+        this.competence = competence;
+    }
+
+    public String getCompetence() {
         return competence;
     }
 
-    public void setCompetence(List<String> competence) {
+    public void setCompetence(String competence) {
         this.competence = competence;
+    }
+
+    @Override
+    public String toString() {
+        return "Competencias{" +
+                "competence='" + competence + '\'' +
+                '}';
     }
 }

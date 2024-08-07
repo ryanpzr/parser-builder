@@ -13,54 +13,57 @@ public class ExperienceFactory {
     List<Experience> experienceList = new ArrayList<>();
 
     public void parseExperience(String text) {
-        Collections.addAll(topics, "Education");
-        String[] textList = utils.getSplitItem("Experiência", "Formação acadêmica", text, "Experience", topics);
+        try {
+            Collections.addAll(topics, "Page");
+            String[] textList = Utils.getSplitItem(text,"--------------experiencia", "--------------education",  topics);
 
-        if (validateNUll(textList)) return;
+            List<String> textListAsList = new ArrayList<>(Arrays.asList(Objects.requireNonNull(textList)));
 
-        List<String> textListAsList = new ArrayList<>(Arrays.asList(textList));
+            Iterator<String> iterator = textListAsList.iterator();
+            while (iterator.hasNext()) {
+                String data = iterator.next();
 
-        Iterator<String> iterator = textListAsList.iterator();
-        while (iterator.hasNext()) {
-            String data = iterator.next();
+                if (data.contains("Experience") || data.contains("Experiência")) {
+                    iterator.remove();
+                }
 
-            if (data.contains("Experience") || data.contains("Experiência")) {
-                iterator.remove();
+                if (data.contains("Page")) {
+                    iterator.remove();
+                }
+                if (data.contains("   ")) {
+                    iterator.remove();
+                }
+                if (data.equals(" ")) {
+                    iterator.remove();
+                }
             }
 
-            if (data.contains("Page")) {
-                iterator.remove();
-            }
-            if (data.contains("   ")) {
-                iterator.remove();
-            }
-            if (data.equals(" ")) {
-                iterator.remove();
-            }
-        }
-
-        for (int i = 0; i < textListAsList.size();) {
-            String empresa = textListAsList.get(i);
-            i++;
-
-            String cargo = textListAsList.get(i);
-            i++;
-
-            String data = textListAsList.get(i);
-            i++;
-
-            String loc = textListAsList.get(i);
-            i++;
-
-            List<String> responsibilities = new ArrayList<>();
-            while (i < textListAsList.size() && isResponsibility(textListAsList.get(i))) {
-                responsibilities.add(textListAsList.get(i).trim());
+            for (int i = 0; i < textListAsList.size();) {
+                String empresa = textListAsList.get(i);
                 i++;
+
+                String cargo = textListAsList.get(i);
+                i++;
+
+                String data = textListAsList.get(i);
+                i++;
+
+                String loc = textListAsList.get(i);
+                i++;
+
+                List<String> responsibilities = new ArrayList<>();
+                while (i < textListAsList.size() && isResponsibility(textListAsList.get(i))) {
+                    responsibilities.add(textListAsList.get(i).trim());
+                    i++;
+                }
+
+               Experience newExperience = new Experience(empresa, cargo, data, loc, responsibilities);
+               experienceList.add(newExperience);
+
             }
 
-           Experience newExperience = new Experience(empresa, cargo, data, loc, responsibilities);
-           experienceList.add(newExperience);
-
+        } catch (Exception ex) {
+            System.err.println("Não foi possivel fazer o parser da Experiẽncia. " + ex);
         }
 
 //        for (int i = 1; i < textList.length; i += 4) {

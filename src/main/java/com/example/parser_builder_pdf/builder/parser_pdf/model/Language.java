@@ -3,20 +3,27 @@ package com.example.parser_builder_pdf.builder.parser_pdf.model;
 import java.util.List;
 
 public class Language {
-    private List<String> language;
+    private String language;
 
     public Language() {
     }
 
-    public Language(List<String> language) {
+    public Language(String language) {
         this.language = language;
     }
 
-    public List<String> getLanguage() {
+    public String getLanguage() {
         return language;
     }
 
-    public void setLanguage(List<String> language) {
+    public void setLanguage(String language) {
         this.language = language;
+    }
+
+    @Override
+    public String toString() {
+        return "Language{" +
+                "language='" + language + '\'' +
+                '}';
     }
 }

@@ -10,30 +10,56 @@ import java.util.*;
 import static com.example.parser_builder_pdf.builder.parser_pdf.ParserBuilder.validateNUll;
 
 public class LanguageFactory {
-    Language language = new Language();
     Utils utils = new Utils();
     Set<String> topics = new LinkedHashSet<>();
+    List<Language> langList = new ArrayList<>();
+    private DataFactory dataFactory;
 
-    public void parseLanguage(String text) {
-        Collections.addAll(topics, "Certifications", "Resumo", "Summary");
-        String[] textList = utils.getSplitItem("Linguas", "Certificações", text, "Languages", topics);
-
-            if (validateNUll(textList)) return;
-
-            List<String> langList = new ArrayList<>();
-
-            for (int i = 1; i < textList.length; i++) {
-                if (i == 4) {
-                    break;
-                }
-
-                langList.add(textList[i]);
-            }
-
-            language.setLanguage(langList);
+    public LanguageFactory(DataFactory dataFactory) {
+        this.dataFactory = dataFactory;
     }
 
-    public Language getLanguage() {
-        return language;
+    public void parseLanguage(String text) {
+        try {
+            Collections.addAll(topics, "--------------resumo", "--------------experiencia", "--------------education");
+            List<String> textList = List.of(Objects.requireNonNull(Utils.getSplitItem(text, "--------------languages", "--------------certifications", topics)));
+
+            for (int i = 2; i < textList.size(); i++) {
+                if (textList.size() > 5) {
+                    String comp = Objects.requireNonNull(textList).get(i);
+                    boolean validate = containsNameInEmail(comp);
+                    if (validate) {
+                        break;
+                    }
+                }
+
+                Language language = new Language(textList.get(i));
+                langList.add(language);
+            }
+
+        } catch (Exception ex) {
+            System.err.println("Não foi possivel fazer o parser da Lingua. " + ex);
+        }
+    }
+
+    public boolean containsNameInEmail(String item) {
+        List<Contato> contatoList = dataFactory.getContato();
+        String[] itemsPart = item.toLowerCase().split(" ");
+
+        for (String part : itemsPart) {
+            for (Contato partContact : contatoList) {
+                if (partContact.getPersonal().contains(part) || partContact.getContato().contains(part) ||
+                        partContact.getLinkLinkd().contains(part) || partContact.getEmail().contains(part) ||
+                        partContact.getBlog().contains(part)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public List<Language> getLanguage() {
+        return langList;
     }
 }

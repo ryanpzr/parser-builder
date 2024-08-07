@@ -7,16 +7,12 @@ public class Utils {
     public Utils() {
     }
 
-    public String getItem(String startIndexPtbr, String stopIndexPtbr, String text, String startIndex, Set<String> topics) {
+    public static String getItem(String startIndexPtbr, String stopIndexPtbr, String text, Set<String> topics) {
         int start = text.indexOf(startIndexPtbr);
         int stop = text.indexOf(stopIndexPtbr);
 
         if (start == -1) {
-            start = text.indexOf(startIndex);
-
-            if (start == -1) {
-                return null;
-            }
+            return null;
         }
 
         if (stop == -1) {
@@ -40,16 +36,12 @@ public class Utils {
         return allText;
     }
 
-    public String[] getSplitItem(String startIndexPtbr, String stopIndexPtbr, String text, String startIndex, Set<String> topics) {
+    public static String[] getSplitItem(String text, String startIndexPtbr, String stopIndexPtbr, Set<String> topics) {
         int start = text.indexOf(startIndexPtbr);
         int stop = text.indexOf(stopIndexPtbr);
 
         if (start == -1) {
-            start = text.indexOf(startIndex);
-
-            if (start == -1) {
-                return null;
-            }
+            return null;
         }
 
         if (stop == -1) {

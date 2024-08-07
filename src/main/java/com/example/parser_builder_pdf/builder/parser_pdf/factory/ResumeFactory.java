@@ -13,18 +13,17 @@ public class ResumeFactory {
     Set<String> topics = new LinkedHashSet<>();
 
     public void parseResume(String text) {
-        Collections.addAll(topics, "Experience", "Formação acadêmica", "Education");
-        String textList = utils.getItem("Resumo", "Experiência", text, "Summary", topics);
+        try {
+            Collections.addAll(topics, "--------------education");
+            String textList = Utils.getItem("--------------resumo", "--------------experiencia", text,  topics);
 
-        if (textList == null) {
-            return;
+            String[] textListSplitted = textList.split("--------------resumo");
+
+            resume.setResume(textListSplitted[1]);
+
+        } catch (Exception ex) {
+            System.err.println("Não foi possivel fazer o parser do Resumo. " + ex);
         }
-
-        String[] textSplited = new String[1];
-
-        textSplited[0] = textList;
-
-        resume.setResume(textSplited[0]);
     }
 
     public Resume getResume() {

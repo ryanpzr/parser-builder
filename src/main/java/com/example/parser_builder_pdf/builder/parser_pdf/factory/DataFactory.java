@@ -6,23 +6,33 @@ import java.util.List;
 
 public class DataFactory {
     ContactFactory contactFactory = new ContactFactory();
-    CompetenceFactory competenceFactory = new CompetenceFactory();
-    LanguageFactory languageFactory = new LanguageFactory();
+    CompetenceFactory competenceFactory = new CompetenceFactory(this);
+    LanguageFactory languageFactory = new LanguageFactory(this);
     ResumeFactory resumeFactory = new ResumeFactory();
     ExperienceFactory experienceFactory = new ExperienceFactory();
     AcademicFactory academicFactory = new AcademicFactory();
+    CertificationFactory certificationFactory = new CertificationFactory(this);
+    PersonalInfoFactory personalInfoFactory = new PersonalInfoFactory(this);
+
+    public DataFactory buildDataFactory(String text) {
+        createData(text);
+
+        return DataFactory.this;
+    }
 
     public void createData(String text) {
-        resumeFactory.parseResume(text);
+        contactFactory.parseContact(text);
         languageFactory.parseLanguage(text);
         competenceFactory.parseCompetence(text);
-        contactFactory.parseContact(text);
-        experienceFactory.parseExperience(text);
+        resumeFactory.parseResume(text);
+//        experienceFactory.parseExperience(text);
         academicFactory.parseAcademicEducation(text);
+        certificationFactory.parseCertification(text);
+        personalInfoFactory.parsePersonalInfo(text);
 
     }
 
-    public Contato getContato() {
+    public List<Contato> getContato() {
         return contactFactory.getContato();
     }
 
@@ -30,11 +40,11 @@ public class DataFactory {
         return resumeFactory.getResume();
     }
 
-    public Competencias getCompetence() {
+    public List<Competencias> getCompetence() {
         return competenceFactory.getCompetence();
     }
 
-    public Language getLanguage() {
+    public List<Language> getLanguage() {
         return languageFactory.getLanguage();
     }
 
@@ -44,5 +54,9 @@ public class DataFactory {
 
     public List<Formation> getAcademicFactory() {
         return academicFactory.getFormation();
+    }
+
+    public List<Certification> getCertification() {
+        return certificationFactory.getCertification();
     }
 }
