@@ -21,7 +21,7 @@ public class ContactFactory {
 
     public void parseContact(String text) {
         try {
-            Collections.addAll(topics, "--------------languages", "--------------certifications", "--------------resumo", "--------------experiencia", "--------------education");
+            Collections.addAll(topics, "--------------languages", "--------------certifications", "--------------honorsAwards", "--------------publications", "--------------resumo", "--------------experiencia", "--------------education");
             String[] textList = Utils.getSplitItem(text, "--------------contact", "--------------competence", topics);
 
             for (String contact : Objects.requireNonNull(textList)) {

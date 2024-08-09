@@ -13,17 +13,17 @@ import java.util.regex.Pattern;
 
 public class ParserBuilder {
 
-    File file =  new File("src/main/java/com/example/parser_builder_pdf/sample/filesPdf/Profile-1.pdf");
-    PDDocument document = PDDocument.load(file);
-    PDFTextStripper pdfStripper = new PDFTextStripper();
-
-    List<Competencias> competencias = new ArrayList<>();
-    List<Language> language = new ArrayList<>();
-    Resume resume = new Resume();
-    List<Certification> certification = new ArrayList<>();
-    List<Contato> contato = new ArrayList<>();
-    List<Experience> experience = new ArrayList<>();
-    List<Formation> formation = new ArrayList<>();
+    private final File file =  new File("src/main/java/com/example/parser_builder_pdf/sample/filesPdf/Profile-1.pdf");
+    private final PDDocument document = PDDocument.load(file);
+    private final PDFTextStripper pdfStripper = new PDFTextStripper();
+    private Resume resume = new Resume();
+    private PersonalInfo personalInfo = new PersonalInfo();
+    private List<Competencias> competencias = new ArrayList<>();
+    private List<Language> language = new ArrayList<>();
+    private List<Certification> certification = new ArrayList<>();
+    private List<Contato> contato = new ArrayList<>();
+    private List<Experience> experience = new ArrayList<>();
+    private List<Formation> formation = new ArrayList<>();
 
     DataFactory dataFactory = new DataFactory();
 
@@ -44,10 +44,11 @@ public class ParserBuilder {
         experience = data.getExperience();
         formation = data.getAcademicFactory();
         certification = data.getCertification();
+        personalInfo = data.getPersonalInfo();
     }
 
     private static StringBuilder getTextConcated(String text) {
-        String[] sections = {"Contato", "Contact", "Principais competências", "Top Skills", "Languages", "Certificações", "Certifications", "Resumo", "Summary", "Experiência", "Experience", "Formação acadêmica", "Education"};
+        String[] sections = {"Contato", "Contact", "Principais competências", "Top Skills", "Languages", "Certificações", "Certifications", "Honors-Awards", "Publicações", "Publications", "Resumo", "Summary", "Experiência", "Experience", "Formação acadêmica", "Education"};
         String[] originalArray = text.split("\\r?\\n");
 
         // Contar o número de separadores necessários
@@ -82,6 +83,13 @@ public class ParserBuilder {
                     case "Certifications":
                         newArray[newIndex++] = "--------------certifications";
                         break;
+                    case "Honors-Awards":
+                        newArray[newIndex++] = "--------------honorsAwards";
+                        break;
+                    case "Publicações":
+                    case "Publications":
+                        newArray[newIndex++] = "--------------publications";
+                        break;
                     case "Resumo":
                     case "Summary":
                         newArray[newIndex++] = "--------------resumo";
@@ -110,6 +118,12 @@ public class ParserBuilder {
 
     public void build() throws IOException {
         builder();
+
+        System.out.println();
+
+        System.out.println(personalInfo.getNome());
+        System.out.println(personalInfo.getDescricao());
+        System.out.println(personalInfo.getLocalizacao());
 
         for (Competencias com : competencias) {
             System.out.println(com);

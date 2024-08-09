@@ -21,7 +21,7 @@ public class LanguageFactory {
 
     public void parseLanguage(String text) {
         try {
-            Collections.addAll(topics, "--------------resumo", "--------------experiencia", "--------------education");
+            Collections.addAll(topics, "--------------honorsAwards", "--------------publications", "--------------resumo", "--------------experiencia", "--------------education");
             List<String> textList = List.of(Objects.requireNonNull(Utils.getSplitItem(text, "--------------languages", "--------------certifications", topics)));
 
             for (int i = 2; i < textList.size(); i++) {

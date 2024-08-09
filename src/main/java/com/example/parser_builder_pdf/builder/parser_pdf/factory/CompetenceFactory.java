@@ -19,7 +19,7 @@ public class CompetenceFactory {
 
     public void parseCompetence(String text) {
         try {
-            Collections.addAll(topics, "--------------certifications", "--------------resumo", "--------------experiencia", "--------------education");
+            Collections.addAll(topics, "--------------certifications", "--------------honorsAwards", "--------------publications", "--------------resumo", "--------------experiencia", "--------------education");
             List<String> textList = List.of(Objects.requireNonNull(Utils.getSplitItem(text, "--------------competence", "--------------languages", topics)));
 
             for (int i = 2; i < textList.size(); i++) {

@@ -20,8 +20,8 @@ public class CertificationFactory {
 
     public void parseCertification(String text) {
         try {
-            Collections.addAll(topics, "--------------experiencia", "--------------education");
-            List<String> textList = List.of(Objects.requireNonNull(Utils.getSplitItem( text,"--------------certifications", "--------------resumo", topics)));
+            Collections.addAll(topics, "--------------publications", "--------------resumo", "--------------experiencia", "--------------education");
+            List<String> textList = List.of(Objects.requireNonNull(Utils.getSplitItem( text,"--------------certifications", "--------------honorsAwards", topics)));
 
             for (int i = 2; i < textList.size(); i++) {
 
@@ -45,13 +45,11 @@ public class CertificationFactory {
         List<Contato> contatoList = dataFactory.getContato();
         String[] itemsPart = item.toLowerCase().split(" ");
 
-        for (String part : itemsPart) {
-            for (Contato partContact : contatoList) {
-                if (partContact.getPersonal().contains(part) || partContact.getContato().contains(part) ||
-                        partContact.getLinkLinkd().contains(part) || partContact.getEmail().contains(part) ||
-                        partContact.getBlog().contains(part)) {
-                    return true;
-                }
+        for (Contato partContact : contatoList) {
+            if (partContact.getPersonal().contains(itemsPart[0]) || partContact.getContato().contains(itemsPart[0]) ||
+                    partContact.getLinkLinkd().contains(itemsPart[0]) || partContact.getEmail().contains(itemsPart[0]) ||
+                    partContact.getBlog().contains(itemsPart[0])) {
+                return true;
             }
         }
 

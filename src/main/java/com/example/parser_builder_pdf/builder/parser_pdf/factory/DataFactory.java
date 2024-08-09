@@ -22,13 +22,14 @@ public class DataFactory {
 
     public void createData(String text) {
         contactFactory.parseContact(text);
-        languageFactory.parseLanguage(text);
         competenceFactory.parseCompetence(text);
+        languageFactory.parseLanguage(text);
+        certificationFactory.parseCertification(text);
+        personalInfoFactory.parsePersonalInfo(text);
         resumeFactory.parseResume(text);
 //        experienceFactory.parseExperience(text);
         academicFactory.parseAcademicEducation(text);
-        certificationFactory.parseCertification(text);
-        personalInfoFactory.parsePersonalInfo(text);
+
 
     }
 
@@ -38,6 +39,10 @@ public class DataFactory {
 
     public Resume getResume() {
         return resumeFactory.getResume();
+    }
+
+    public PersonalInfo getPersonalInfo() {
+        return personalInfoFactory.getPersonalInfo();
     }
 
     public List<Competencias> getCompetence() {
